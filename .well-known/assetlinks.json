@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "site.zai_ai.work_hours_837g.twa",
+      "sha256_cert_fingerprints": [
+        "FB:AE:5F:EF:74:54:83:E4:9A:8B:9B:95:F7:15:70:13:A0:75:3D:33:F1:C5:94:F8:B2:21:1A:2B:0E:09:CF:DB"
+      ]
+    }
+  }
+]
