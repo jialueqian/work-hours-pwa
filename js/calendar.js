@@ -28,7 +28,7 @@ function onClick(e) {
 
 // 键盘可达：聚焦卡片后回车/空格翻转（与点击同一语义）
 root.addEventListener('keydown', (e) => {
-  if ((e.key === 'Enter' || e.key === ' ') && e.target.classList?.contains('hero-flip')) {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('hero-flip')) {
     e.preventDefault();
     e.target.classList.toggle('flipped');
   }
