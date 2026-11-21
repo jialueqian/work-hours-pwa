@@ -1,5 +1,5 @@
 // sw.js — 离线缓存（cache-first）。改任何静态资源后必须升 CACHE 版本号
-const CACHE = 'slr-v28';
+const CACHE = 'slr-v29';
 const ASSETS = [
   './',
   './index.html',
