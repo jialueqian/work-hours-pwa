@@ -684,7 +684,7 @@ a.data-btn { color: var(--text); text-decoration: none; }
 .hero-flip-inner { position: relative; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.2,.7,.2,1); }
 .hero-flip.flipped .hero-flip-inner { transform: rotateY(180deg); }
 .hero-face { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--sp-5); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-.hero-back { position: absolute; inset: 0; transform: rotateY(180deg); display: flex; flex-direction: column; }
+.hero-back { position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: rotateY(180deg); display: flex; flex-direction: column; }
 .flip-hint { float: right; color: var(--faint); font-size: var(--fs-body); margin-left: var(--sp-2); }
 .wb-head { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-3); }
 .wb-title { font-size: var(--fs-small); color: var(--dim); letter-spacing: .08em; }
