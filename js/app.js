@@ -99,6 +99,11 @@ document.getElementById('install-bar-close').addEventListener('click', () => {
 });
 switchView('calendar');
 
+// 原生容器（安卓 APK 内置 WebView）标记：设置页据此隐藏 Web 专属区块、导出走原生桥
+if (window.AndroidBridge && window.AndroidBridge.saveFile) {
+  document.documentElement.classList.add('is-native');
+}
+
 // PWA：SW 只在 http(s) 下注册（file:// 打开会报错）
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   const hadController = !!navigator.serviceWorker.controller;
