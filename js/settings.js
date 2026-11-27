@@ -11,6 +11,9 @@ import { installState, promptInstall, onInstallStateChange } from './install.js'
 const root = document.getElementById('view-settings');
 let editingJobId = null; // 编辑岗位时的表单状态
 
+// 原生容器（安卓 APK）：app.js 已检测 AndroidBridge 并给 <html> 加 is-native
+const IS_NATIVE = typeof window !== 'undefined' && !!(window.AndroidBridge && window.AndroidBridge.saveFile);
+
 /** 版本号由 index.html 的 meta 提供（升 SW CACHE 时同步改 meta） */
 function appVersion() {
   const el = document.querySelector('meta[name="slr-version"]');
@@ -88,7 +91,7 @@ export function renderSettings() {
       </div>
     </div>
 
-    <div class="sec">
+    <div class="sec web-only">
       <h2>安装到手机（推荐）</h2>
       ${state === 'done' ? '<p class="hint ok">✅ 已以独立 App 形态运行</p>' : `
       ${state === 'native' ? '<button class="btn-primary" data-act="prompt-install">一键添加到桌面</button>' : ''}
@@ -97,16 +100,16 @@ export function renderSettings() {
       <p class="hint">添加到桌面后全屏无地址栏、有独立图标与启动画面（iOS），离线可用，不用重装。<b>注意</b>：iOS 主屏幕 App 与 Safari 的数据相互隔离——如果 Safari 里已有记录，添加后先用「数据备份 → 导出/导入」迁移一次。</p>`}
     </div>
 
-    <div class="sec">
-      <h2>备用：安卓安装包（APK）</h2>
+    <div class="sec web-only">
+      <h2>安卓原生版安装包（APK）</h2>
       <div class="data-btns">
-        <a class="data-btn" href="./work-hours.apk" download="记工时.apk">下载 APK（仅安卓）</a>
+        <a class="data-btn" href="./work-hours.apk${location.search}" download="记工时.apk">下载 APK（仅安卓）</a>
         <button class="data-btn" data-act="copy-apk">复制下载直链</button>
       </div>
-      <p class="hint">多数国产浏览器与微信会拦截 APK 下载；建议优先用上面的「添加到主屏幕」。确需下载时，请用 Chrome 或系统浏览器打开本站再点。安装包已指向当前线上版本，网页更新无需重装。</p>
+      <p class="hint">多数国产浏览器与微信会拦截 APK 下载；请用 Chrome 或手机自带浏览器打开本站再点。这是<b>原生版安装包</b>：打开就是软件本体、完全离线、数据存在手机本地，不依赖任何网址。覆盖安装不清数据，卸载应用才会清；换机/更新前记得先「导出备份(JSON)」。</p>
     </div>
 
-    <div class="sec">
+    <div class="sec web-only">
       <h2>打不开链接 / 下载不了？</h2>
       <p class="hint">链接末尾的 <code>?sharecode=…</code> 不能丢：部分国产浏览器会截断参数或禁用第三方 Cookie，导致 403 或首屏白屏。</p>
       <div class="data-btns">
@@ -185,7 +188,7 @@ export function renderSettings() {
         <input type="file" id="import-file" accept=".json,.txt,.xlsx" hidden>
       </div>
       <p class="hint" id="storage-info">本地存储状态检查中…</p>
-      <p class="hint">导入自动识别两种文件：本工具导出的 JSON 备份、原版 App 导出的 Excel(.xlsx)。Excel 导入按日期覆盖合并，缺的岗位自动创建。数据只存在本机浏览器里，请定期导出备份。</p>
+      <p class="hint">${IS_NATIVE ? '数据存在应用内部的本地存储，不依赖任何网站域名，卸载应用才会清除。系统清理或换手机不会自动带走，请定期导出备份。' : '导入自动识别两种文件：本工具导出的 JSON 备份、原版 App 导出的 Excel(.xlsx)。Excel 导入按日期覆盖合并，缺的岗位自动创建。数据只存在本机浏览器里，请定期导出备份。'}</p>
     </div>
 
     <div class="sec">
@@ -199,7 +202,7 @@ export function renderSettings() {
 
     <div class="sec">
       <h2>关于</h2>
-      <p class="hint">记工时 ${esc(appVersion())} · 零广告零跳转 · 数据本地存储</p>
+      <p class="hint">记工时 ${esc(appVersion())} · 零广告零跳转 · ${IS_NATIVE ? '安卓原生版：完全离线，数据存本机' : '数据本地存储'}</p>
       <div class="data-btns">
         <button class="data-btn" data-act="hard-refresh">强制刷新（清缓存）</button>
       </div>
@@ -492,6 +495,18 @@ function today() {
 }
 
 function download(filename, content, mime) {
+  // 原生容器：WebView 不响应 a[download]，改走安卓桥调系统「保存到」对话框
+  if (IS_NATIVE) {
+    const b64 = typeof content === 'string'
+      ? btoa(unescape(encodeURIComponent(content)))
+      : bytesToB64(content);
+    try {
+      window.AndroidBridge.saveFile(filename, b64);
+    } catch (err) {
+      alert('导出失败：' + (err && err.message ? err.message : err));
+    }
+    return;
+  }
   const blob = typeof content === 'string'
     ? new Blob([content], { type: mime + ';charset=utf-8' })
     : new Blob([content], { type: mime });
@@ -500,4 +515,14 @@ function download(filename, content, mime) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+/** Uint8Array → base64：分块拼接避免 apply 参数超限 */
+function bytesToB64(u8) {
+  let s = '';
+  const CH = 0x8000;
+  for (let i = 0; i < u8.length; i += CH) {
+    s += String.fromCharCode.apply(null, u8.subarray(i, Math.min(i + CH, u8.length)));
+  }
+  return btoa(s);
 }
