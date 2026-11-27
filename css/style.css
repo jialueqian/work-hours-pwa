@@ -707,3 +707,6 @@ a.data-btn { color: var(--text); text-decoration: none; }
 @media (min-width: 520px) {
   .day-cell { min-height: 100px; }
 }
+
+/* 原生容器（安卓 APK）：隐藏只对网页有意义的区块（安装引导/APK 下载/链接排障） */
+.is-native .web-only { display: none !important; }
