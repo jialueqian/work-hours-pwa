@@ -71,7 +71,7 @@ export function renderSettings() {
 
     <div class="sec">
       <h2>岗位管理</h2>
-      ${jobs.length ? '' : '<p class="hint">还没有岗位。打卡时可先选「自定义（不设岗位）」临时记，或在此添加常用岗位。</p>'}
+      ${jobs.length ? '' : '<p class="hint">还没有岗位。打卡可不选岗位直接记，添加常用岗位后一键选择。</p>'}
       ${jobs.map((j) => `
         <div class="job-row">
           <div class="job-info">
@@ -92,48 +92,48 @@ export function renderSettings() {
     </div>
 
     <div class="sec web-only">
-      <h2>安装到手机（推荐）</h2>
-      ${state === 'done' ? '<p class="hint ok">✅ 已以独立 App 形态运行</p>' : `
+      <h2>添加到主屏幕（推荐）</h2>
+      ${state === 'done' ? '<p class="hint ok">✅ 已安装</p>' : `
       ${state === 'native' ? '<button class="btn-primary" data-act="prompt-install">一键添加到桌面</button>' : ''}
-      ${state === 'ios-guide' ? '<p class="hint">iOS：用 <b>Safari</b> 打开本页（微信/Chrome 里不行）→ 点底部中间的分享按钮（□↑）→「添加到主屏幕」→ 确认。链接要带完整访问码，别手动删掉 ?sharecode=…。</p>' : ''}
-      ${state === 'menu-guide' ? '<p class="hint">安卓：点浏览器菜单（⋮ 或 ≡）→「添加到主屏幕 / 安装应用」。<br>国产浏览器若找不到入口，请把链接复制到 <b>Chrome 或手机自带浏览器</b>打开后再操作；微信内打开请先点右上角 ··· 用系统浏览器打开。</p>' : ''}
-      <p class="hint">添加到桌面后全屏无地址栏、有独立图标与启动画面（iOS），离线可用，不用重装。<b>注意</b>：iOS 主屏幕 App 与 Safari 的数据相互隔离——如果 Safari 里已有记录，添加后先用「数据备份 → 导出/导入」迁移一次。</p>`}
+      ${state === 'ios-guide' ? '<p class="hint">用 <b>Safari</b> 打开本页（微信里不行）→ 分享（□↑）→「添加到主屏幕」。<br>主屏 App 与 Safari 记录不互通，已有记录先导出备份。</p>' : ''}
+      ${state === 'menu-guide' ? '<p class="hint">浏览器菜单（⋮）→「添加到主屏幕 / 安装应用」。<br>微信里先点 ··· 转系统浏览器；找不到就用 Chrome 打开。</p>' : ''}
+      <p class="hint">全屏打开、独立图标，离线也能用。</p>`}
     </div>
 
     <div class="sec web-only">
-      <h2>安卓原生版安装包（APK）</h2>
+      <h2>安卓安装包（APK）</h2>
       <div class="data-btns">
         <a class="data-btn" href="./work-hours.apk${location.search}" download="记工时.apk">下载 APK（仅安卓）</a>
         <button class="data-btn" data-act="copy-apk">复制下载直链</button>
       </div>
-      <p class="hint">多数国产浏览器与微信会拦截 APK 下载；请用 Chrome 或手机自带浏览器打开本站再点。这是<b>原生版安装包</b>：打开就是软件本体、完全离线、数据存在手机本地，不依赖任何网址。覆盖安装不清数据，卸载应用才会清；换机/更新前记得先「导出备份(JSON)」。</p>
+      <p class="hint">装好就是完整 App，完全离线。微信会拦截下载，需用 Chrome 或系统浏览器打开本页。</p>
     </div>
 
     <div class="sec web-only">
-      <h2>打不开链接 / 下载不了？</h2>
-      <p class="hint">链接末尾的 <code>?sharecode=…</code> 不能丢：部分国产浏览器会截断参数或禁用第三方 Cookie，导致 403 或首屏白屏。</p>
+      <h2>打不开 / 下载不了？</h2>
+      <p class="hint">链接里的 <code>?sharecode=…</code> 是访问码，缺了打不开。</p>
       <div class="data-btns">
         <button class="data-btn" data-act="copy-link">复制完整链接</button>
       </div>
-      <p class="hint">把复制的链接粘贴到 <b>Chrome 或手机自带浏览器</b>地址栏打开；微信内请点右上角 ··· 用系统浏览器打开。首屏能开但没样式时，用「关于」里的强制刷新。</p>
+      <p class="hint">复制后粘贴到 Chrome 或系统浏览器打开即可。</p>
       <div id="copy-result" class="hint ok"></div>
     </div>
 
     <div class="sec">
       <h2>打卡设置</h2>
       <div class="dlg-row">
-        <label>连打预填</label>
+        <label>快捷时长</label>
         <select id="qf-mode">
-          <option value="last" ${qf.mode !== 'custom' ? 'selected' : ''}>跟随最近记录</option>
-          <option value="custom" ${qf.mode === 'custom' ? 'selected' : ''}>自定义时长</option>
+          <option value="last" ${qf.mode !== 'custom' ? 'selected' : ''}>跟随最近打卡</option>
+          <option value="custom" ${qf.mode === 'custom' ? 'selected' : ''}>自定义</option>
         </select>
       </div>
       ${qf.mode === 'custom' ? `
-      <p class="hint">打卡弹窗的时长块将显示下面的自定义时长组（覆盖「最近记录」档位），可存多个：</p>
+      <p class="hint">打卡时点击即可填入：</p>
       <div class="cf-chips">
         ${(qf.customHours || []).map((h) => `
           <span class="cf-chip">${fmtHours(h)}<button class="cf-del" data-act="del-cf" data-h="${h}" aria-label="删除该时长">×</button></span>`).join('')}
-        ${(qf.customHours || []).length ? '' : '<span class="hint cf-empty">还没添加，在下面输入时长后点「添加」</span>'}
+        ${(qf.customHours || []).length ? '' : '<span class="hint cf-empty">暂无</span>'}
       </div>
       <div class="cf-add">
         <input id="cf-hours" type="number" min="0.5" max="24" step="0.5" inputmode="decimal" placeholder="如 2.5">
@@ -144,19 +144,17 @@ export function renderSettings() {
     <div class="sec">
       <h2>结算设置</h2>
       <div class="settle-opt${settleMode === 'record' ? ' on' : ''}" data-act="set-settle-mode" data-mode="record">
-        <div class="settle-opt-txt"><b>按记录结算</b><span>每条打卡单独标记；统计页可一键结算当月全部</span></div>
+        <div class="settle-opt-txt"><b>按记录结算</b><span>每条打卡单独标记，可一键结算当月全部</span></div>
         <i class="radio"></i>
       </div>
       <div class="settle-opt${settleMode === 'half-month' ? ' on' : ''}" data-act="set-settle-mode" data-mode="half-month">
-        <div class="settle-opt-txt"><b>每半个月结算</b><span>1–15 日、16 日–月末各为一期，按本期汇总并整期结算</span></div>
+        <div class="settle-opt-txt"><b>每半月结算</b><span>每月 1–15 日、16 日–月末各为一期，整期一起结算</span></div>
         <i class="radio"></i>
       </div>
-      <p class="hint">切换只改变结算的统计与操作方式，不影响历史记录与金额。</p>
     </div>
 
     <div class="sec">
       <h2>外观</h2>
-      <p class="hint">日历页的汇总卡可以点一下翻转，背面显示「最忙的一周」工时分布——不需要设置开关。</p>
       <div class="data-btns">
         <button class="data-btn" data-act="pick-wallpaper">选择背景图片</button>
         ${wp ? '<button class="data-btn" data-act="clear-wallpaper">移除背景</button>' : ''}
@@ -170,12 +168,12 @@ export function renderSettings() {
       <div class="dlg-row">
         <label>截取方式</label>
         <select id="wp-fit">
-          <option value="cover" ${wp.fit !== 'contain' && wp.fit !== 'stretch' ? 'selected' : ''}>按比例截取填满</option>
+          <option value="cover" ${wp.fit !== 'contain' && wp.fit !== 'stretch' ? 'selected' : ''}>裁剪填满</option>
           <option value="contain" ${wp.fit === 'contain' ? 'selected' : ''}>完整显示</option>
           <option value="stretch" ${wp.fit === 'stretch' ? 'selected' : ''}>拉伸填满</option>
         </select>
       </div>` : ''}
-      <p class="hint">背景图自动压缩后保存在本机浏览器，不上传服务器。开启后卡片会半透明以透出背景。</p>
+      <p class="hint">图片只保存在本机，不上传。</p>
     </div>
 
     <div class="sec">
@@ -188,7 +186,7 @@ export function renderSettings() {
         <input type="file" id="import-file" accept=".json,.txt,.xlsx" hidden>
       </div>
       <p class="hint" id="storage-info">本地存储状态检查中…</p>
-      <p class="hint">${IS_NATIVE ? '数据存在应用内部的本地存储，不依赖任何网站域名，卸载应用才会清除。系统清理或换手机不会自动带走，请定期导出备份。' : '导入自动识别两种文件：本工具导出的 JSON 备份、原版 App 导出的 Excel(.xlsx)。Excel 导入按日期覆盖合并，缺的岗位自动创建。数据只存在本机浏览器里，请定期导出备份。'}</p>
+      <p class="hint">${IS_NATIVE ? '卸载才会清数据，换机前先导出。' : '换机前先导出；支持导入本工具备份与原版 App 的 Excel。'}</p>
     </div>
 
     <div class="sec">
@@ -206,7 +204,6 @@ export function renderSettings() {
       <div class="data-btns">
         <button class="data-btn" data-act="hard-refresh">强制刷新（清缓存）</button>
       </div>
-      <p class="hint">以本页版本号为准；看到旧界面时点上面的强制刷新（不会删除打卡数据）。</p>
       <p class="hint">由 <a class="about-link" href="https://zcode.z.ai" target="_blank" rel="noopener">ZCode</a> 托管</p>
     </div>`;
 

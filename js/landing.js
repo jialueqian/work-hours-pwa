@@ -404,7 +404,7 @@ function tpl() {
         }).join('')}
       </div>
       <p class="lp-release-note">1 次点击。不用拖滚轮，不用关广告，不用等加载。<br>
-      常用档位越用越懂你；要 0.5h 粒度？<b>±0.5</b> 大按钮就在旁边。</p>
+      常用档位越用越懂你；要记 0.5h？<b>±0.5</b> 大按钮就在旁边。</p>
       <div class="lp-step">
         <button class="lp-step-btn lp-step-minus">−0.5</button>
         <span class="lp-step-num">2.5</span>
@@ -462,11 +462,11 @@ function tpl() {
     <div class="lp-act lp-install">
       <h2 class="lp-h2">把它装进口袋。</h2>
       <div class="lp-install-cards">
-        <a class="lp-inst-card" href="https://wbapp-sgjijwhcuuezkmw5c6iiws.app.workbuddy.host/work-hours.apk?sharecode=74GWYB2SI6">
-          <b>Android 安装包</b><span>原生容器 · 无网络权限 · 离线可用 · 246KB</span>
+        <a class="lp-inst-card" href="./work-hours.apk${location.search}" download="记工时.apk">
+          <b>Android 安装包</b><span>完全离线 · 零权限 · 仅 246KB</span>
         </a>
         <button class="lp-inst-card lp-inst-start">
-          <b>网页版 / 添加主屏幕</b><span>任意浏览器打开即用，可安装为独立应用</span>
+          <b>网页版</b><span>打开即用，可添加到主屏幕</span>
         </button>
         <div class="lp-inst-card lp-inst-ios">
           <b>iOS</b><span>Safari 打开 → 分享 → 添加到主屏幕</span>
