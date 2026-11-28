@@ -3,7 +3,7 @@
 //      → 格子垒月 → 翻转卡（最忙一周）→ 小票打印 → 三端安装（落章）→ 尾声
 // 兼容基线 Chromium 69+：无 ?? / ?. / inset 简写 / dvh 单用；prefers-reduced-motion 全降级
 
-import { busiestWeek, fmtNum } from './store.js';
+// 发布页是纯演示叙事，所有数字来自下方 DEMO 常量，不读用户 store（新访客 store 为空）。
 
 const DEMO = {
   year: 2026, month: 11,
@@ -258,7 +258,7 @@ export function initLanding(root) {
   }, { threshold: 0.25 });
   wallIO.observe(wall);
 
-  // ---------- 翻转卡（真交互，数据来自 busiestWeek） ----------
+  // ---------- 翻转卡（真交互，背面数据来自 DEMO 种子） ----------
   el.flip.addEventListener('click', function () {
     el.flip.classList.toggle('flipped');
   });
@@ -341,17 +341,14 @@ function fmtClock(ms) {
 }
 
 function fillFlip() {
-  // 背面数据：busiestWeek 真实计算（demo 数据兜底）
-  let w = null;
-  try {
-    w = busiestWeek(DEMO.year, DEMO.month);
-  } catch (e) { /* 空数据时用叙事默认 */ }
+  // 发布页是演示叙事：翻转卡背面用 DEMO 常量（与正面 21.5h/¥408 同一套种子数据）。
+  // 不读 store —— 新访客 store 为空会显示空白，且 busiestWeek 返回的是 totalHours/totalIncome/daysCount，
+  // 与这里旧代码读的 w.hours/w.pay/w.days 键名也不符（双重 bug）。
   const back = document.querySelector('.lp-flip-back');
   if (!back) return;
-  const has = w && w.hours > 0;
-  back.querySelector('.lp-flip-h').textContent = has ? w.hours.toFixed(1) + 'h' : '—';
-  back.querySelector('.lp-flip-p').textContent = has ? '¥' + fmtNum(w.pay) : '—';
-  back.querySelector('.lp-flip-d').textContent = has ? w.days + ' 天' : '—';
+  back.querySelector('.lp-flip-h').textContent = DEMO.weekHours + 'h';
+  back.querySelector('.lp-flip-p').textContent = '¥' + DEMO.weekPay;
+  back.querySelector('.lp-flip-d').textContent = DEMO.weekDays + ' 天';
 }
 
 function tpl() {
