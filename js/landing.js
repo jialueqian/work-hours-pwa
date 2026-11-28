@@ -13,11 +13,59 @@ const DEMO = {
 };
 
 const ADS = [
-  { t: '恭喜获得红包', s: '立即提现', c: '#e05a5a', th: 0.18 },
-  { t: '开通会员免广告', s: '¥18/月', c: '#d88a2b', th: 0.38 },
-  { t: '下载官方浏览器', s: '更快更安全', c: '#b06ad0', th: 0.58 },
-  { t: '限时特惠 · 点我', s: '跳转中…', c: '#5a8ae0', th: 0.78 },
+  { t: '恭喜获得红包', s: '立即提现', c: '#e05a5a', th: 0.14 },
+  { t: '开通会员免广告', s: '¥18/月', c: '#d88a2b', th: 0.26 },
+  { t: '下载官方浏览器', s: '更快更安全', c: '#b06ad0', th: 0.38 },
+  { t: '限时特惠 · 点我', s: '跳转中…', c: '#5a8ae0', th: 0.5 },
+  { t: '您有一条补贴待领取', s: '过期作废', c: '#e05a5a', th: 0.62 },
+  { t: '看视频再免 30 分钟', s: '广告×2', c: '#3fa66b', th: 0.72 },
+  { t: '抽奖 · iPhone 免费拿', s: '已有人提现', c: '#d88a2b', th: 0.82 },
+  { t: '关闭广告请开通SVIP', s: '仅需 ¥30', c: '#b06ad0', th: 0.9 },
 ];
+
+/** 把元素的文本拆成逐字 span（stagger 入场用），保留 <br> */
+function wrapChars(node) {
+  const frag = document.createDocumentFragment();
+  let i = 0;
+  Array.from(node.childNodes).forEach(function (child) {
+    if (child.nodeType === 3) {
+      // 文本节点：逐字符包 span
+      Array.from(child.textContent).forEach(function (ch) {
+        const s = document.createElement('span');
+        s.className = 'lp-ch';
+        s.textContent = ch;
+        s.style.setProperty('--i', i++);
+        frag.appendChild(s);
+      });
+    } else if (child.nodeType === 1) {
+      child.style.setProperty('--i', i++);
+      frag.appendChild(child); // <br> 等元素原样保留
+    }
+  });
+  node.innerHTML = '';
+  node.appendChild(frag);
+}
+
+/** 碎片粒子：hell 碎屏解放时广告炸开 */
+function spawnShards(hellEl) {
+  const ads = hellEl.querySelectorAll('.lp-ad.shown');
+  ads.forEach(function (ad) {
+    const r = ad.getBoundingClientRect();
+    const host = hellEl.querySelector('.lp-hell-sticky');
+    for (let i = 0; i < 5; i++) {
+      const sh = document.createElement('div');
+      sh.className = 'lp-shard';
+      sh.style.background = getComputedStyle(ad).backgroundColor;
+      sh.style.left = (r.left - host.getBoundingClientRect().left + Math.random() * r.width) + 'px';
+      sh.style.top = (r.top - host.getBoundingClientRect().top + Math.random() * r.height) + 'px';
+      sh.style.setProperty('--dx', (Math.random() * 240 - 120) + 'px');
+      sh.style.setProperty('--dy', (Math.random() * -180 - 40) + 'px');
+      sh.style.setProperty('--rot', (Math.random() * 540 - 270) + 'deg');
+      host.appendChild(sh);
+      setTimeout(function () { sh.remove(); }, 1300);
+    }
+  });
+}
 
 export function initLanding(root) {
   root.innerHTML = tpl();
@@ -117,15 +165,25 @@ export function initLanding(root) {
     el.hellHint.hidden = true;
     el.hellCount.textContent = instant ? '0' : fmtClock(spent).replace(/^0:/, '');
     root.querySelector('.lp-hell').classList.add('lp-hell-done');
+    // 碎裂解放：广告炸成碎片飞散 + 白闪（reduce/instant 不放粒子，直出完成态）
+    if (!instant && !reduceMotion) {
+      spawnShards(root.querySelector('.lp-hell'));
+      const flash = el.hell.querySelector('.lp-flash');
+      if (flash) flash.classList.add('on');
+      root.querySelector('.lp-hell').classList.add('lp-shake');
+    }
     ADS.forEach(function (a, i) {
       const ad = el.hell.querySelector('.lp-ad[data-i="' + i + '"]');
       if (ad && ad.classList.contains('shown') && !instant) ad.classList.add('crack');
     });
     setTimeout(function () {
       root.querySelector('.lp-hell').classList.add('lp-hell-past');
+      root.querySelector('.lp-hell').classList.remove('lp-shake'); // 解放后停止震屏
       el.release.classList.add('lp-in');
-      chipDemo(); // 解放区可见后开始自动演示档位
-    }, instant ? 200 : 900);
+      wrapChars(el.release.querySelector('.lp-h2'));
+      el.release.querySelector('.lp-h2').classList.add('chars-in');
+      chipDemo();
+    }, instant ? 200 : 1300);
   }
 
   el.hellSkip.addEventListener('click', function () { hellFinish(true); });
@@ -178,6 +236,28 @@ export function initLanding(root) {
     node.classList.add('pulse');
   }
 
+  // ---------- 格子墙：30 格逐格点亮（stagger） ----------
+  const wall = root.querySelector('.lp-wall');
+  const wallRecords = { 1: [2, 36], 2: [3.5, 70], 3: [3.5, 70], 5: [4, 72], 8: [2.5, 45], 9: [2.5, 45], 10: [3.5, 70] };
+  for (let d = 1; d <= 30; d++) {
+    const r = wallRecords[d];
+    const cell = document.createElement('div');
+    cell.className = 'lp-wall-cell' + (r ? ' has' : '');
+    cell.innerHTML = '<span class="d">' + d + '</span>' +
+      (r ? '<span class="w h">' + r[0].toFixed(1) + 'h</span><span class="w p">¥' + r[1] + '</span>' : '');
+    cell.style.setProperty('--i', d - 1);
+    wall.appendChild(cell);
+  }
+  const wallIO = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        wall.classList.add('light-up');
+        wallIO.disconnect();
+      }
+    });
+  }, { threshold: 0.25 });
+  wallIO.observe(wall);
+
   // ---------- 翻转卡（真交互，数据来自 busiestWeek） ----------
   el.flip.addEventListener('click', function () {
     el.flip.classList.toggle('flipped');
@@ -192,22 +272,35 @@ export function initLanding(root) {
   const receiptIdx = [];
   receiptRows.forEach(function (r) { receiptIdx.push(r); });
 
+  // ---------- Hero 逐字入场 ----------
+  wrapChars(root.querySelector('.lp-h1'));
+  requestAnimationFrame(function () {
+    root.querySelector('.lp-hero').classList.add('in');
+  });
+
   // ---------- 滚动驱动总控 ----------
   function onScroll() {
     // 视图隐藏（display:none）时 getBoundingClientRect 全零，会让下面的进度计算误判完成——统一守卫
     if (!root.classList.contains('active')) return;
     hellScroll();
-    // 小票逐行
-    const rect = el.receipt.getBoundingClientRect();
-    const vh = window.innerHeight || 800;
-    const p = clamp((vh - rect.top) / (vh * 0.9), 0, 1);
+    // 小票：容器随滚动「从打印口探出」（clip-path 行程）+ 逐行
+    const rRect = el.receipt.getBoundingClientRect();
+    const vh0 = window.innerHeight || 800;
+    const outP = clamp((vh0 - rRect.top) / (vh0 * 0.75), 0, 1);
+    el.receipt.style.clipPath = 'inset(0 0 ' + ((1 - outP) * 100).toFixed(1) + '% 0)';
+    const p = clamp((vh0 - rRect.top) / (vh0 * 0.9), 0, 1);
     const show = Math.floor(p * receiptIdx.length);
     receiptIdx.forEach(function (r, i) {
       r.classList.toggle('on', i < show);
     });
     // 落章
     const st = el.stamp.getBoundingClientRect();
-    if (st.top < vh * 0.7) el.stamp.classList.add('stamped');
+    if (st.top < vh * 0.7) {
+      if (!el.stamp.classList.contains('stamped')) {
+        el.stamp.classList.add('stamped');
+        el.install.classList.add('stamped-shake');
+      }
+    }
     // 色彩情景：hell 之后把页面底色切回主世界
     document.body.classList.toggle('lp-in-hell', inView(el.hell) && !hellDone);
   }
@@ -300,6 +393,7 @@ function tpl() {
         <div class="lp-hell-done" hidden>
           这就是录一条 2.5h 的代价——<br>你滚了 <b class="lp-hell-count">0</b> 秒，还关了 ${ADS.length} 个广告。
         </div>
+        <div class="lp-flash"></div>
       </div>
     </div>
 
@@ -325,6 +419,7 @@ function tpl() {
     <div class="lp-act lp-month">
       <h2 class="lp-h2">一个月，<span class="lp-green">垒</span>出来。</h2>
       <p class="lp-note">每天一格：蓝的是工时，绿的是钱。这个月的班，一眼看完。</p>
+      <div class="lp-wall" id="lp-wall"></div>
       <div class="lp-month-blk">
         <span class="lp-blk-hours">21.5h</span>
         <span class="lp-blk-pay">¥${DEMO.pay}</span>
