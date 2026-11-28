@@ -222,6 +222,160 @@
 .lp-tail .lp-hire-val { color: var(--text); }
 .lp-tail-sub { text-align: center; color: var(--faint); font-size: 12px; padding-bottom: 40px; }
 
+/* ================= 张力动画系统 ================= */
+
+/* Hero 逐字砸落：每个字从上方落下带轻微过冲 */
+.lp-h1 .lp-ch {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(34px) scale(0.86);
+}
+.lp-hero.in .lp-h1 .lp-ch {
+  animation: lp-char-drop .5s cubic-bezier(.2, 1.4, .4, 1) forwards;
+  animation-delay: calc(var(--i) * 70ms);
+}
+@keyframes lp-char-drop {
+  0% { opacity: 0; transform: translateY(34px) scale(0.86); }
+  70% { opacity: 1; transform: translateY(-5px) scale(1.04); }
+  100% { opacity: 1; transform: none; }
+}
+.lp-hero .lp-sub,
+.lp-hero .lp-hero-blk,
+.lp-hero .lp-hire {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity .6s var(--ease-std, ease), transform .6s var(--ease-out, ease);
+}
+.lp-hero.in .lp-sub { transition-delay: .5s; opacity: 1; transform: none; }
+.lp-hero.in .lp-hero-blk { transition-delay: .75s; opacity: 1; transform: none; }
+.lp-hero.in .lp-hire { transition-delay: .15s; opacity: 1; transform: none; }
+.lp-hero.in .lp-down { animation: lp-bob 1.8s ease-in-out infinite; }
+
+/* 地狱：面板持续微抖 + 数字 glitch + 计时器红光 */
+.lp-hell-sticky {
+  animation: lp-hell-breathe 2.6s ease-in-out infinite;
+}
+@keyframes lp-hell-breathe {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(-1.5px, 1px); }
+  66% { transform: translate(1.5px, -1px); }
+}
+.lp-hell.lp-shake .lp-hell-sticky { animation: lp-hell-breathe 2.6s ease-in-out infinite, lp-quake .38s linear infinite; }
+@keyframes lp-quake {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-4px, 2px) rotate(-.3deg); }
+  40% { transform: translate(4px, -3px) rotate(.3deg); }
+  60% { transform: translate(-3px, -2px); }
+  80% { transform: translate(3px, 2px) rotate(.2deg); }
+}
+.lp-hell:not(.lp-hell-done) .lp-wheel-num {
+  text-shadow: 3px 0 rgba(224, 90, 90, .75), -3px 0 rgba(90, 138, 224, .75);
+  animation: lp-glitch .9s steps(2) infinite;
+}
+@keyframes lp-glitch {
+  0%, 88% { text-shadow: 3px 0 rgba(224, 90, 90, .75), -3px 0 rgba(90, 138, 224, .75); }
+  90% { text-shadow: -4px 0 rgba(224, 90, 90, .85), 4px 0 rgba(90, 138, 224, .85); transform: translateX(2px); }
+  94% { text-shadow: 5px 0 rgba(224, 90, 90, .9), -5px 0 rgba(90, 138, 224, .9); transform: translateX(-3px); }
+  100% { text-shadow: 3px 0 rgba(224, 90, 90, .75), -3px 0 rgba(90, 138, 224, .75); }
+}
+.lp-hell:not(.lp-hell-done) .lp-hell-timer { color: #e05a5a; text-shadow: 0 0 14px rgba(224, 90, 90, .5); }
+
+/* 广告扑脸：更大更狠，弹出带旋转过冲 */
+.lp-ad {
+  transition: opacity .22s ease, transform .3s cubic-bezier(.2, 1.5, .4, 1);
+}
+.lp-ad.shown {
+  opacity: 1;
+  transform: scale(1) rotate(-1.5deg);
+  animation: lp-ad-slam .38s cubic-bezier(.2, 1.6, .4, 1);
+}
+@keyframes lp-ad-slam {
+  0% { transform: scale(1.7) rotate(4deg); opacity: .3; }
+  60% { transform: scale(0.94) rotate(-2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-1.5deg); opacity: 1; }
+}
+.lp-ad.crack {
+  opacity: 0;
+  transform: scale(1.3) rotate(9deg);
+  transition: opacity .45s ease, transform .55s var(--ease-out, ease);
+}
+
+/* 白闪 + 碎片粒子 */
+.lp-flash {
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+  background: #f2f6f1; opacity: 0; pointer-events: none; z-index: 5;
+}
+.lp-flash.on { animation: lp-flash-on .7s ease-out; }
+@keyframes lp-flash-on {
+  0% { opacity: 0; } 18% { opacity: .96; } 100% { opacity: 0; }
+}
+.lp-shard {
+  position: absolute; width: 34px; height: 16px; z-index: 6;
+  animation: lp-shard-fly 1.15s cubic-bezier(.2, .6, .4, 1) forwards;
+  pointer-events: none;
+}
+@keyframes lp-shard-fly {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); }
+}
+
+/* 格子墙逐格点亮：stagger 从左上扫到右下 */
+.lp-wall {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
+  margin: 6px 0 24px;
+}
+.lp-wall-cell {
+  border-radius: 9px; background: var(--surface-2); border: 1px solid var(--line);
+  padding: 7px 2px; text-align: center; min-height: 52px;
+  display: flex; flex-direction: column; justify-content: center; gap: 2px;
+  opacity: 0; transform: translateY(14px) scale(.92);
+  font-family: ui-monospace, Consolas, monospace; font-variant-numeric: tabular-nums;
+}
+.lp-wall.light-up .lp-wall-cell {
+  animation: lp-cell-up .45s var(--ease-out, ease) forwards;
+  animation-delay: calc(var(--i) * 42ms);
+}
+@keyframes lp-cell-up {
+  0% { opacity: 0; transform: translateY(14px) scale(.92); }
+  100% { opacity: 1; transform: none; }
+}
+.lp-wall-cell .d { font-size: 10.5px; color: var(--faint); }
+.lp-wall-cell.has .d { color: var(--text); }
+.lp-wall-cell .w { font-size: 12.5px; font-weight: 700; }
+.lp-wall-cell .w.h { color: #7fb2e0; }
+.lp-wall-cell .w.p { color: var(--primary); }
+
+/* 解放区文字逐字浮现 */
+.chars-in .lp-ch {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(18px);
+  animation: lp-char-rise .55s var(--ease-out, ease) forwards;
+  animation-delay: calc(var(--i) * 55ms);
+}
+@keyframes lp-char-rise {
+  0% { opacity: 0; transform: translateY(18px); }
+  100% { opacity: 1; transform: none; }
+}
+.lp-release.lp-in .lp-release-num {
+  animation: lp-num-pop .6s cubic-bezier(.2, 1.6, .4, 1) .3s backwards;
+}
+@keyframes lp-num-pop {
+  0% { transform: scale(.5); opacity: 0; }
+  70% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* 落章震屏 */
+.lp-stamp.stamped { animation: lp-stamp-hit .45s cubic-bezier(.2, 1.3, .4, 1); }
+@keyframes lp-stamp-hit {
+  0% { transform: rotate(-8deg) scale(2.6); opacity: 0; }
+  55% { transform: rotate(-8deg) scale(0.92); opacity: .88; }
+  75% { transform: rotate(-8deg) scale(1.05); }
+  100% { transform: rotate(-8deg) scale(1); opacity: .88; }
+}
+.lp-install.stamped-shake { animation: lp-quake .3s linear .28s 1; }
+
 /* 降级：减少动效 */
 @media (prefers-reduced-motion: reduce) {
   .lp *, .lp *::before, .lp *::after {
@@ -229,4 +383,6 @@
     transition-duration: 0.01ms !important;
   }
   .lp-hero .lp-down { animation: none; }
+  .lp-hell-sticky, .lp-hell.lp-shake .lp-hell-sticky { animation: none; }
+  .lp-hell:not(.lp-hell-done) .lp-wheel-num { text-shadow: none; animation: none; }
 }
