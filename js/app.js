@@ -1,19 +1,22 @@
-// app.js — 入口：三视图切换、底部导航、模块初始化、SW 注册
+// app.js — 入口：视图切换（含发布页门厅）、底部导航、模块初始化、SW 注册
 import { initCalendar, renderCalendar, gotoMonth } from './calendar.js';
 import { initDialog, openPunchDialog } from './dialog.js';
 import { initStats, renderStats } from './stats.js';
 import { initSettings, renderSettings } from './settings.js';
-import { getWallpaper } from './store.js';
+import { getWallpaper, allRecords } from './store.js';
 import { initInstall, installState, promptInstall, onInstallStateChange } from './install.js';
+import { initLanding } from './landing.js';
 
 let current = 'calendar';
 
 const INSTALL_DISMISS_KEY = 'slr_install_bar_dismissed';
 
-/** 安装引导条：浏览器不会主动弹安装提示（有参与度门槛/iOS 没有），自己提供入口 */
+/** 安装引导条：浏览器不会主动弹安装提示（有参与度门槛/iOS 没有），自己提供入口。
+    发布页视图下隐藏（发布页自带安装区） */
 function renderInstallBar() {
   const bar = document.getElementById('install-bar');
   if (!bar) return;
+  if (current === 'landing') { bar.hidden = true; return; }
   const state = installState();
   const dismissed = localStorage.getItem(INSTALL_DISMISS_KEY) === '1';
   if (state === 'done' || dismissed) {
@@ -55,9 +58,17 @@ function applyWallpaper() {
 }
 
 function switchView(name) {
+  const prev = current;
   current = name;
   document.querySelectorAll('.nav-btn').forEach((b) => b.classList.toggle('active', b.dataset.view === name));
   document.querySelectorAll('.view').forEach((v) => v.classList.toggle('active', v.id === 'view-' + name));
+  // 发布页是全屏叙事：隐藏底部导航与安装条；离开时停掉雇佣计时器
+  document.getElementById('bottom-nav').hidden = name === 'landing';
+  if (prev === 'landing' && name !== 'landing') {
+    document.getElementById('view-landing').dispatchEvent(new CustomEvent('slr:landing-stop'));
+  }
+  renderInstallBar();
+  window.scrollTo(0, 0);
   if (name === 'calendar') renderCalendar();
   else if (name === 'stats') renderStats();
   else if (name === 'settings') renderSettings();
@@ -78,6 +89,10 @@ initStats((dateKey) => {
   openPunchDialog(dateKey);
 });
 initSettings();
+initLanding(document.getElementById('view-landing'));
+
+// 发布页「开始记工时」→ 进入应用
+document.getElementById('view-landing').addEventListener('slr:landing-enter', () => switchView('calendar'));
 
 // 数据变化后刷新两个数据视图（结算模式切换会同时影响月历与统计页）
 document.addEventListener('slr:changed', () => {
@@ -97,7 +112,8 @@ document.getElementById('install-bar-close').addEventListener('click', () => {
   localStorage.setItem(INSTALL_DISMISS_KEY, '1');
   renderInstallBar();
 });
-switchView('calendar');
+// 启动视图：有记录的老用户直达应用；全新访客先看发布页
+switchView(Object.keys(allRecords()).length > 0 ? 'calendar' : 'landing');
 
 // 原生容器（安卓 APK 内置 WebView）标记：设置页据此隐藏 Web 专属区块、导出走原生桥
 if (window.AndroidBridge && window.AndroidBridge.saveFile) {
