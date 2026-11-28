@@ -143,6 +143,8 @@ input[type="range"]:focus { border: none; }
   border-top: 1px solid var(--line);
   padding-bottom: env(safe-area-inset-bottom);
 }
+/* 发布页（landing）视图隐藏底栏：hidden 属性会被上面的 display:flex 压制，需显式规则 */
+#bottom-nav[hidden] { display: none; }
 @supports (backdrop-filter: blur(12px)) {
   #bottom-nav { background: rgba(14, 16, 14, 0.62); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
 }
