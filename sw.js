@@ -1,9 +1,10 @@
 // sw.js — 离线缓存（cache-first）。改任何静态资源后必须升 CACHE 版本号
-const CACHE = 'slr-v32';
+const CACHE = 'slr-v33';
 const ASSETS = [
   './',
   './index.html',
   './css/style.css',
+  './css/landing.css',
   './js/store.js',
   './js/cards.js',
   './js/xlsx.js',
@@ -13,6 +14,7 @@ const ASSETS = [
   './js/stats.js',
   './js/settings.js',
   './js/install.js',
+  './js/landing.js',
   './js/app.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
